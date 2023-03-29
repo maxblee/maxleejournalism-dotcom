@@ -1,0 +1,26 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout svelte build
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node/v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install playwright
+        run: npx playwright install --with-deps
+      - name: unit tests
+        run: npm run test:unit
+      - name: end-to-end tests
+        run: npm run test

@@ -1,0 +1,30 @@
+name: Deploys Site
+
+on:
+  workflow_run:
+    workflows: ['Lint', 'Test']
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout svelte build
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node/v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build static site
+        run: npm run build
+      - name: Upload to s3
+        run: aws s3 sync --acl public-read ./dist/ s3://maxleejournalism.com
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
